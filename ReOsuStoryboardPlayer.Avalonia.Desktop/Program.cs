@@ -51,6 +51,7 @@ internal class Program
             //.UseWinit()
             //.UseVello()
             .UseWin32()
+            .UseHarfBuzz()
             .UseSkia()
             .WithInterFont()
             .AppendDependencyInject(collection =>

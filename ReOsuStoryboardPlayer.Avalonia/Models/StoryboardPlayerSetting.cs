@@ -30,7 +30,7 @@ public partial class StoryboardPlayerSetting : ObservableObject
     public partial float DefaultAudioLeadInSeconds { get; set; } = 1.8f;
 
     [ObservableProperty]
-    public partial SKFilterQuality FilterQuality { get; set; } = SKFilterQuality.Low;
+    public partial StoryboardFilterQuality FilterQuality { get; set; } = StoryboardFilterQuality.Low;
 
     /// <summary>
     ///     if beatmap's AudioLeadIn is zero, set DefaultAudioLeadInSeconds as well.
@@ -132,5 +132,28 @@ public partial class StoryboardPlayerSetting : ObservableObject
             Setting.ShowProfileSuggest = value;
             OnPropertyChanged();
         }
+    }
+}
+
+public enum StoryboardFilterQuality
+{
+    None = 0,
+    Low = 1,
+    Medium = 2,
+    High = 3,
+}
+
+public static class StoryboardFilterQualityExtensions
+{
+    public static SKSamplingOptions ToSamplingOptions(this StoryboardFilterQuality quality)
+    {
+        return quality switch
+        {
+            StoryboardFilterQuality.None => new SKSamplingOptions(SKFilterMode.Nearest),
+            StoryboardFilterQuality.Low => new SKSamplingOptions(SKFilterMode.Linear),
+            StoryboardFilterQuality.Medium => new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear),
+            StoryboardFilterQuality.High => new SKSamplingOptions(SKCubicResampler.Mitchell),
+            _ => new SKSamplingOptions(SKFilterMode.Linear),
+        };
     }
 }

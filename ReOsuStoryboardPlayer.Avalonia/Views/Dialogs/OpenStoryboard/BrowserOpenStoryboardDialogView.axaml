@@ -22,7 +22,7 @@
                     <RadioButton
                         IsChecked="{Binding OpenMethod,Converter={StaticResource RadioButtonEnumToBoolConverter},ConverterParameter={x:Static enum:OpenStoryboardMethods.DownloadZipFile}}"
                         x:Name="zipUrlRadio" Content="Load .zip/.osz file from url:" />
-                    <TextBox Watermark="https://example.url/download/L2857.zip" MinWidth="200"
+                    <TextBox PlaceholderText="https://example.url/download/L2857.zip" MinWidth="200"
                              Text="{Binding DownloadUrl}"
                              IsEnabled="{Binding ElementName=zipUrlRadio, Path=IsChecked}" />
                 </StackPanel>
@@ -31,7 +31,7 @@
                     <RadioButton
                         IsChecked="{Binding OpenMethod,Converter={StaticResource RadioButtonEnumToBoolConverter},ConverterParameter={x:Static enum:OpenStoryboardMethods.ParseUrl}}"
                         x:Name="beatmapUrlRadio" Content="Load from osu beatmap url:" />
-                    <TextBox Watermark="https://osu.ppy.sh/beatmapsets/559622" MinWidth="200"
+                    <TextBox PlaceholderText="https://osu.ppy.sh/beatmapsets/559622" MinWidth="200"
                              Text="{Binding ParseUrl}"
                              IsEnabled="{Binding ElementName=beatmapUrlRadio, Path=IsChecked}" />
                 </StackPanel>

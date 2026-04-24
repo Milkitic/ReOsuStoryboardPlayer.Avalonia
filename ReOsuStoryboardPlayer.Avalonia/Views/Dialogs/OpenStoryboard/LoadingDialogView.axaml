@@ -15,7 +15,7 @@
     </Design.DataContext>
 
     <Grid ColumnDefinitions="Auto,*" Margin="10">
-        <ui:ProgressRing VerticalAlignment="Center" IsIndeterminate="True" BorderThickness="10" Width="50" Height="50" />
+        <!--<ui:ProgressRing VerticalAlignment="Center" IsIndeterminate="True" BorderThickness="10" Width="50" Height="50" />-->
         <TextBlock Grid.Column="1" TextWrapping="Wrap" VerticalAlignment="Center" Text="{Binding Message}" Margin="4,2" />
     </Grid>
 </views:ViewBase>

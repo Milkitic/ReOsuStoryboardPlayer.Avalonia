@@ -48,6 +48,7 @@ public partial class StoryboardPlayer : UserControl
                 o.storyboardPlayerSetting = v;
                 if (o.storyboardPlayerSetting is not null)
                     o.storyboardPlayerSetting.PropertyChanged += o.StoryboardPlayerSettingOnPropertyChanged;
+                o.ApplyPlayerSetting();
             });
 
 
@@ -63,6 +64,8 @@ public partial class StoryboardPlayer : UserControl
     private readonly Stopwatch stopwatch = new();
 
     private readonly StoryboardDrawOperation storyboardDrawOperation;
+
+    private SKSamplingOptions spriteSamplingOptions = StoryboardFilterQuality.Low.ToSamplingOptions();
 
     private IAudioPlayer audioPlayer;
 
@@ -92,8 +95,7 @@ public partial class StoryboardPlayer : UserControl
 
         sprintPaint = new SKPaint
         {
-            IsAntialias = false,
-            FilterQuality = SKFilterQuality.Low
+            IsAntialias = false
         };
 
         InitializeComponent();
@@ -123,10 +125,15 @@ public partial class StoryboardPlayer : UserControl
         {
             case nameof(PlayerSetting.AntiAliasing):
             case nameof(PlayerSetting.FilterQuality):
-                sprintPaint.FilterQuality = PlayerSetting.FilterQuality;
-                sprintPaint.IsAntialias = PlayerSetting.AntiAliasing;
+                ApplyPlayerSetting();
                 break;
         }
+    }
+
+    private void ApplyPlayerSetting()
+    {
+        spriteSamplingOptions = (storyboardPlayerSetting?.FilterQuality ?? StoryboardFilterQuality.Low).ToSamplingOptions();
+        sprintPaint.IsAntialias = storyboardPlayerSetting?.AntiAliasing ?? false;
     }
 
     private void RebuildStoryboardUpdater()
@@ -144,7 +151,7 @@ public partial class StoryboardPlayer : UserControl
     {
         base.Render(context);
 
-        var scale = this.GetVisualRoot()?.RenderScaling ?? 1;
+        var scale = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
         storyboardDrawOperation.Bounds = new Rect(0, 0, Bounds.Width, Bounds.Height) * scale;
         context?.Custom(storyboardDrawOperation);
 
@@ -221,7 +228,7 @@ public partial class StoryboardPlayer : UserControl
 
         string[] lines =
         [
-            $"Bounds: {storyboardDrawOperation.Bounds} Dpi: {this.GetVisualRoot()?.RenderScaling ?? 1:F2}x ClientSize:{this.GetVisualRoot()?.ClientSize}",
+            $"Bounds: {storyboardDrawOperation.Bounds} Dpi: {TopLevel.GetTopLevel(this)?.RenderScaling ?? 1:F2}x ClientSize:{TopLevel.GetTopLevel(this)?.ClientSize}",
             $"FPS/Update/Render: {(double.IsInfinity(fps) ? "--" : fps.ToString("F2"))}/{storyboardUpdateCostTime:F2}ms/{storyboardRenderCostTime:F2}ms",
             $"Rendering Objs: {storyboardUpdater.UpdatingStoryboardObjects.Count}",
             $"Executing Cmds: {storyboardUpdater.UpdatingStoryboardObjects.Sum(x => x.ExecutedCommands.Count)}"
@@ -371,7 +378,7 @@ public partial class StoryboardPlayer : UserControl
 
         var originOffsetX = tex.Width * origin.X;
         var originOffsetY = tex.Height * origin.Y;
-        skCanvas.DrawImage(tex, originOffsetX, originOffsetY, sprintPaint);
+        skCanvas.DrawImage(tex, originOffsetX, originOffsetY, spriteSamplingOptions, sprintPaint);
 
         skCanvas.Restore();
     }
@@ -422,14 +429,16 @@ public partial class StoryboardPlayer : UserControl
     }
 
 #if DEBUG
+    private readonly SKFont textFont = new(
+        SKTypeface.FromFamilyName("Consolas", SKFontStyleWeight.Normal, SKFontStyleWidth.Normal,
+            SKFontStyleSlant.Upright)
+        ?? SKTypeface.FromFamilyName("Courier New")
+        ?? SKTypeface.Default,
+        14);
+
     private readonly SKPaint textPaint = new()
     {
         IsAntialias = true,
-        Typeface = SKTypeface.FromFamilyName("Consolas", SKFontStyleWeight.Normal, SKFontStyleWidth.Normal,
-                       SKFontStyleSlant.Upright)
-                   ?? SKTypeface.FromFamilyName("Courier New")
-                   ?? SKTypeface.Default,
-        TextSize = 14,
         Color = SKColors.White,
         IsStroke = false
     };
@@ -443,7 +452,7 @@ public partial class StoryboardPlayer : UserControl
         if (canvas == null) throw new ArgumentNullException(nameof(canvas));
 
         // Font metrics 用来计算行高
-        var fm = textPaint.FontMetrics; // ascent is negative
+        var fm = textFont.Metrics; // ascent is negative
         // 行高：ascent(-) + descent(+) + leading
         var lineHeight = MathF.Ceiling(MathF.Abs(fm.Ascent) + MathF.Abs(fm.Descent) + MathF.Abs(fm.Leading));
 
@@ -452,13 +461,13 @@ public partial class StoryboardPlayer : UserControl
         foreach (var line in lines)
         {
             if (string.IsNullOrEmpty(line)) continue;
-            var w = textPaint.MeasureText(line);
+            var w = textFont.MeasureText(line, textPaint);
             if (w > maxWidth) maxWidth = w;
         }
 
         // 如果所有行都空（例如只是换行），用量度空格以确保最小可见宽度
         if (maxWidth == 0f)
-            maxWidth = textPaint.MeasureText(" ");
+            maxWidth = textFont.MeasureText(" ", textPaint);
 
         // 背景矩形（左上角）
         var x = 0f;
@@ -483,7 +492,7 @@ public partial class StoryboardPlayer : UserControl
         {
             // 注意：MeasureText 对于空字符串返回 0，我们仍然需要绘制空白占位（可忽略）
             if (!string.IsNullOrEmpty(line))
-                canvas.DrawText(line, bgLeft + padding, curBaseline, textPaint);
+                canvas.DrawText(line, bgLeft + padding, curBaseline, textFont, textPaint);
             curBaseline += lineHeight;
         }
     }

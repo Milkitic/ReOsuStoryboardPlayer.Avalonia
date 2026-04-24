@@ -131,8 +131,8 @@
                                                 <TextBlock Margin="0,0,0,5" Text="Jump to audio time" />
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBox Margin="0,0,10,0" Name="jumpToInput" Width="100"
-                                                             UseFloatingWatermark="False"
-                                                             Watermark="ms" />
+                                                             UseFloatingPlaceholder="False"
+                                                             PlaceholderText="ms" />
                                                     <Button Content="Go" Command="{Binding JumpToTimeCommand}"
                                                             CommandParameter="{Binding #jumpToInput.Text}" />
                                                 </StackPanel>

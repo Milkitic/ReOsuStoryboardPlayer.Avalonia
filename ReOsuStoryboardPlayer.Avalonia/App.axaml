@@ -15,7 +15,7 @@ RequestedThemeVariant="Default">
 
 	<Application.Styles>
 		<FluentTheme/>
-		<StyleInclude Source="avares://FluentAvalonia.ProgressRing/Styling/Controls/ProgressRing.axaml" />
+		<!--<StyleInclude Source="avares://FluentAvalonia.ProgressRing/Styling/Controls/ProgressRing.axaml" />-->
 
 		<StyleInclude Source="UI/Styles/IconButton.axaml" />
 		<Style Selector="Border.ContentContainer">
